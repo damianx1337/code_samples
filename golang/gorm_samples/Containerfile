@@ -1,0 +1,31 @@
+FROM docker.io/library/golang:1.20.10 AS builder
+
+ENV APP_NAME=psgres
+
+COPY src/main.go /home/go/src/
+COPY src/models/user.go /home/go/src/models/user.go
+COPY src/models/db.go /home/go/src/models/db.go
+COPY src/controllers/post.go /home/go/src/controllers/post.go
+WORKDIR /home/go/src
+RUN go mod init ${APP_NAME}
+RUN go mod tidy
+RUN GOOS=linux GOARCH=arm64 go build -o ${APP_NAME}_linux-arm64
+
+FROM docker.io/library/debian:bookworm-slim
+ENV APP_NAME=psgres
+RUN apt-get update && apt-get dist-upgrade -y
+RUN apt-get install -y postgresql vim wget
+RUN useradd -m -d /home/noadm -s /bin/bash noadm
+COPY --from=builder /home/go/src/${APP_NAME}_linux-arm64 /home/noadm
+
+COPY pg_hba.conf /etc/postgresql/15/main/pg_hba.conf
+
+WORKDIR /home/noadm
+
+USER root
+
+RUN /etc/init.d/postgresql start && psql -U postgres -h localhost -c "create database crud;"
+
+#RUN wget https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/10.1.0/flyway-commandline-10.1.0-linux-x64.tar.gz && tar xzvf flyway-commandline-10.1.0-linux-x64.tar.gz
+
+CMD ["/bin/bash"]
