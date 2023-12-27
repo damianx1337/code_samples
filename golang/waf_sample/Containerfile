@@ -7,6 +7,8 @@ WORKDIR /home/go/src
 RUN go mod init ${APP_NAME}
 RUN go mod tidy
 RUN GOOS=linux GOARCH=arm64 go build -o ${APP_NAME}_linux-arm64
+RUN go install golang.org/x/vuln/cmd/govulncheck@latest
+RUN govulncheck ./...
 
 FROM docker.io/library/debian:bookworm-slim
 ENV APP_NAME=waf
