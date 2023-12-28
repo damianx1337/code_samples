@@ -1,22 +1,21 @@
 FROM docker.io/library/golang:1.20.12 AS builder
 
-ENV APP_NAME=waf
+ENV APP_NAME=waf-gingonic
 
 COPY src/main.go /home/go/src/
 WORKDIR /home/go/src
 RUN go mod init ${APP_NAME}
 RUN go mod tidy
 RUN GOOS=linux GOARCH=arm64 go build -o ${APP_NAME}_linux-arm64
-RUN go install golang.org/x/vuln/cmd/govulncheck@latest
-RUN govulncheck ./...
+#RUN go install golang.org/x/vuln/cmd/govulncheck@latest
+#RUN govulncheck ./...
 
 FROM docker.io/library/debian:bookworm-slim
-ENV APP_NAME=waf
+ENV APP_NAME=waf-gingonic
 RUN apt-get update && apt-get dist-upgrade -y
 RUN apt-get install -y vim wget
 RUN useradd -m -d /home/noadm -s /bin/bash noadm
 COPY --from=builder /home/go/src/${APP_NAME}_linux-arm64 /home/noadm
-COPY default.conf /home/noadm/
 
 WORKDIR /home/noadm
 

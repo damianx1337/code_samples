@@ -2,30 +2,61 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"strings"
 
 	"github.com/corazawaf/coraza/v3"
+	txhttp "github.com/corazawaf/coraza/v3/http"
+	"github.com/corazawaf/coraza/v3/types"
 )
 
-func main() {
-	// First we initialize our waf and our seclang parser
-	waf, err := coraza.NewWAF(coraza.NewWAFConfig().
-		WithDirectives(`SecRule REMOTE_ADDR "@rx .*" "id:1,phase:1,deny,status:403"`))
-	// Now we parse our rules
-	if err != nil {
-		fmt.Println(err)
+func exampleHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	resBody := "Hello world, transaction not disrupted."
+
+	if body := os.Getenv("RESPONSE_BODY"); body != "" {
+		resBody = body
 	}
 
-	// Then we create a transaction and assign some variables
-	tx := waf.NewTransaction()
-	defer func() {
-		tx.ProcessLogging()
-		tx.Close()
-	}()
-	tx.ProcessConnection("127.0.0.1", 8080, "127.0.0.1", 12345)
-
-	// Finally we process the request headers phase, which may return an interruption
-	if it := tx.ProcessRequestHeaders(); it != nil {
-		fmt.Printf("Transaction was interrupted with status %d\n", it.Status)
+	if h := os.Getenv("RESPONSE_HEADERS"); h != "" {
+		key, val, _ := strings.Cut(h, ":")
+		w.Header().Set(key, val)
 	}
+
+	// The server generates the response
+	w.Write([]byte(resBody))
 }
 
+func main() {
+	waf := createWAF()
+
+	http.Handle("/", txhttp.WrapHandler(waf, http.HandlerFunc(exampleHandler)))
+
+	fmt.Println("Server is running. Listening port: 8090")
+
+	log.Fatal(http.ListenAndServe("0.0.0.0:8090", nil))
+}
+
+func createWAF() coraza.WAF {
+	directivesFile := "./default.conf"
+	if s := os.Getenv("DIRECTIVES_FILE"); s != "" {
+		directivesFile = s
+	}
+
+	waf, err := coraza.NewWAF(
+		coraza.NewWAFConfig().
+			WithErrorCallback(logError).
+			WithDirectivesFromFile(directivesFile),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return waf
+}
+
+func logError(error types.MatchedRule) {
+	msg := error.ErrorLog()
+	fmt.Printf("[logError][%s] %s\n", error.Rule().Severity(), msg)
+}

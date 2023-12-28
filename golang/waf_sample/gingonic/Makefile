@@ -1,11 +1,11 @@
-IMG_NAME=waf
+IMG_NAME=waf-gingonic
 #VTAG=$(shell date +"%y%m%d-%H%M")
 VTAG=$(shell date +"%y%m%d")
 CT_NAME=${IMG_NAME}_ct
 MAINTAINER=$(shell whoami)
 CT_FILE=Containerfile
-CT_PORT=8090
-HOST_PORT=8090
+CT_PORT=8080
+HOST_PORT=8080
 
 build:
 	podman build -f ${CT_FILE} -t ${MAINTAINER}/${IMG_NAME}:${VTAG}
