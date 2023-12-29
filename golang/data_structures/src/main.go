@@ -6,26 +6,18 @@ import (
 	"encoding/json"
 )
 
-type Example struct {
-    Id []int
-    Name []string
-}
-
-func (data *Example) AppendOffer(id int, name string) {
-    data.Id = append(data.Id, id)
-    data.Name = append(data.Name, name)
-}
-
-var MyMap map[string]*Example
-
 func main() {
-    obj := &Example{[]int{}, []string{}}
-    obj.AppendOffer(1, "SomeText")
-    MyMap = make(map[string]*Example)
-    MyMap["key1"] = obj
-    MyMap["key2"] = obj
-    MyMap["key1"].Name = append(MyMap["key1"].Name, "vlavla")
-    fmt.Println(MyMap["key1"].Name)
+    MyMap := make(map[string][]map[string]string)
+		details := make(map[string]string)
+		details["prop_id"] = "tesstprop"
+		details["rep_id"] = "tesstrep"
+		details["ad_time"] = "tesstad"
+
+    MyMap["key1"] = append(MyMap["key1"], details)
+    MyMap["key1"] = append(MyMap["key1"], details)
+    MyMap["key1"] = append(MyMap["key1"], details)
+    MyMap["key2"] = append(MyMap["key1"], details)
+    fmt.Println(MyMap["key1"])
     fmt.Println(reflect.TypeOf(MyMap["key1"]))
 
 		j, err := json.Marshal(MyMap)
@@ -34,4 +26,5 @@ func main() {
 		} else {
 			fmt.Println(string(j))
 		}
+
 }
