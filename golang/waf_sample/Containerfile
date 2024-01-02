@@ -1,10 +1,11 @@
-FROM docker.io/library/golang:1.20.12 AS builder
+FROM docker.io/library/golang:1.21.5 AS builder
 
 ENV APP_NAME=waf
 
 COPY src/main.go /home/go/src/
+COPY src/go.mod /home/go/src/
 WORKDIR /home/go/src
-RUN go mod init ${APP_NAME}
+#RUN go mod init ${APP_NAME}
 RUN go mod tidy
 RUN GOOS=linux GOARCH=arm64 go build -o ${APP_NAME}_linux-arm64
 RUN go install golang.org/x/vuln/cmd/govulncheck@latest
