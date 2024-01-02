@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+  "fmt"
 
 	"psgres/models"
 
@@ -30,12 +31,17 @@ func CreatePost(c *gin.Context) {
 */
 
 func FindPosts(c *gin.Context) {
-	//var users []models.User
-	var projects []models.Project
-	//models.DB.Find(&posts)
-  models.DB.Preload("Users").Find(&projects)
+	var users []models.User
+  models.DB.Debug().Find(&users)
 
-	c.JSON(http.StatusOK, gin.H{"data": projects})
+  var proposals = make(map[string]int)
+  for k, v := range users { 
+    fmt.Printf("key[%s] value[%s]\n", k, v.Name)
+    proposals[v.Name]=1 
+  }
+  fmt.Println(proposals)
+
+	c.JSON(http.StatusOK, gin.H{"items": users})
 }
 
 /*

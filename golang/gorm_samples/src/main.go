@@ -1,7 +1,6 @@
 package main
 
 import (
-  "log"
 	"psgres/controllers"
 	"psgres/models"
 
@@ -10,8 +9,7 @@ import (
 
 func main() {
 	models.ConnectDatabase()
-	log.Println(controllers.FindPosts)
-
+	//log.Println(controllers.FindPosts)
 
 	router := gin.Default()
 

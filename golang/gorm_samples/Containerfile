@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.20.10 AS builder
+FROM docker.io/library/golang:1.21.5 AS builder
 
 ENV APP_NAME=psgres
 
@@ -10,6 +10,8 @@ WORKDIR /home/go/src
 RUN go mod init ${APP_NAME}
 RUN go mod tidy
 RUN GOOS=linux GOARCH=arm64 go build -o ${APP_NAME}_linux-arm64
+RUN go install golang.org/x/vuln/cmd/govulncheck@latest
+RUN govulncheck ./...
 
 FROM docker.io/library/debian:bookworm-slim
 ENV APP_NAME=psgres
@@ -25,6 +27,9 @@ WORKDIR /home/noadm
 USER root
 
 RUN /etc/init.d/postgresql start && psql -U postgres -h localhost -c "create database crud;"
+RUN /etc/init.d/postgresql start && psql -U postgres -h localhost crud -c "create table users (name varchar(255), first_name varchar(255), registered_at date);"
+RUN /etc/init.d/postgresql start && psql -U postgres -h localhost crud -c "insert into users (name, first_name, registered_at) VALUES ('lastname','firstname', '1994-10-27');"
+RUN /etc/init.d/postgresql start && psql -U postgres -h localhost crud -c "insert into users (name, first_name, registered_at) VALUES ('georges','gls', '1994-12-27');"
 
 #RUN wget https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/10.1.0/flyway-commandline-10.1.0-linux-x64.tar.gz && tar xzvf flyway-commandline-10.1.0-linux-x64.tar.gz
 
