@@ -9,26 +9,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/*
-type CreatePostInput struct {
-	Title   string `json:"title" binding:"required"`
-	Content string `json:"content" binding:"required"`
+
+type CreateUserInput struct {
+	Name      string `json:"name" binding:"required"`
+	FirstName string `json:"firstName" binding:"required"`
 }
 
-func CreatePost(c *gin.Context) {
-	var input CreatePostInput
+func CreateUser(c *gin.Context) {
+	var input CreateUserInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	post := models.Post{Title: input.Title, Content: input.Content}
-  users = [5000]User{{Name: "jinzhu", Pets: []Pet{pet1, pet2, pet3}}...}
-	models.DB.Create(&post)
+	user := models.User{Name: input.Name, FirstName: input.FirstName}
+  //users = [5000]User{{Name: "jinzhu", Pets: []Pet{pet1, pet2, pet3}}...}
+	models.DB.Create(&user)
 
-	c.JSON(http.StatusOK, gin.H{"data": post})
+	c.JSON(http.StatusOK, gin.H{"data": user})
 }
-*/
+
 
 func FindPosts(c *gin.Context) {
 	var users []models.User
