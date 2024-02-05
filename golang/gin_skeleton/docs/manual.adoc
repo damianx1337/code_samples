@@ -1,0 +1,3 @@
+== Summary
+
+Sample project with solutions to some specific cases.
