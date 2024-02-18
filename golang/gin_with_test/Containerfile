@@ -1,0 +1,16 @@
+FROM docker.io/library/golang:1.21.7 AS builder
+
+ENV APP_NAME=test-gin-route-resp
+
+COPY src/main.go /home/go/src/
+COPY src/main_test.go /home/go/src/
+WORKDIR /home/go/src
+RUN go mod init ${APP_NAME}
+RUN go mod tidy
+RUN go test -v ./...
+#RUN go install golang.org/x/vuln/cmd/govulncheck@latest
+#RUN govulncheck ./...
+RUN GOOS=linux GOARCH=arm64 go build -o ${APP_NAME}_linux-arm64
+
+CMD ["/bin/bash"]
+
