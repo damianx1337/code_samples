@@ -3,18 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-
-	// necessary for k8s
 	"context"
 	"strings"
 	"log"
-	"path/filepath"
 
-	// necessary for k8s
-	//clientcmd "k8s.io/client-go/1.5/tools/clientcmd"
-	clientcmd "k8s.io/client-go/tools/clientcmd"
 	kubernetes "k8s.io/client-go/kubernetes"
+	cruntimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -35,24 +29,7 @@ func main() {
 }
 
 func connectK8sCluster() *kubernetes.Clientset {
-	home, exists := os.LookupEnv("HOME")
-	if !exists {
-		home = "/root"
-	}
-
-	configPath := filepath.Join(home, ".kube", "config")
-
-	config, err := clientcmd.BuildConfigFromFlags("", configPath)
-	if err != nil {
-		log.Panicln("failed to create k8s config")
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Panicln("Failed to generate k8s clientset")
-	}
-
-	return clientset
+	return kubernetes.NewForConfigOrDie(cruntimeconfig.GetConfigOrDie())
 }
 
 func launchK8sCronJob(clientset *kubernetes.Clientset, jobName *string, image *string, cmd *string) {
