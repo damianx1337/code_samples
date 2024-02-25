@@ -1,0 +1,23 @@
+FROM docker.io/library/golang:1.21.7 AS builder
+
+ENV APP_NAME=golang-grpc
+
+RUN apt-get update && apt-get install -y protobuf-compiler
+
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+
+COPY src/main.go /home/go/src/
+#COPY src/main_test.go /home/go/src/
+COPY src/chat.proto /home/go/src/chat.proto
+
+WORKDIR /home/go/src
+RUN go mod init ${APP_NAME}
+RUN go mod tidy
+#RUN go test -v ./...
+#RUN go install golang.org/x/vuln/cmd/govulncheck@latest
+#RUN govulncheck ./...
+#RUN GOOS=linux GOARCH=arm64 go build -o ${APP_NAME}_linux-arm64
+
+CMD ["/bin/bash"]
+

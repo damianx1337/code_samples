@@ -1,0 +1,6 @@
+= GOLang gRPC - Sample
+
+[source,bash]
+----
+# TODO
+----
