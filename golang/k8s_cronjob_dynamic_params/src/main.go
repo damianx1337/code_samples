@@ -48,7 +48,7 @@ func launchK8sCronJob(clientset *kubernetes.Clientset, jobName *string, image *s
 						{
 							Name: *jobName,
 							Image: *image,
-							Command: strings.Split(*cmd, ""),
+							Command: strings.Split(*cmd, " "),
 						},	
 					},
 					RestartPolicy: v1.RestartPolicyNever,
