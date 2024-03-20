@@ -23,12 +23,14 @@ import (
 	// SWAGGER
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "<module>/docs"
+	"<module>/docs"
+	//_ "<module>/docs"
 
 	// METRICS - PROMETHEUS
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	// SECURITY - HEADERS
+	"github.com/unrolled/secure"
 	//"github.com/gin-contrib/secure"
 	// there is also gin-helm...
 
@@ -58,6 +60,9 @@ var (
 // @BasePath /api
 // @query.collection.format multi
 func main () {
+	docs.SwaggerInfo.Host = ""
+	docs.SwaggerInfo.Version = ""
+
 	file, err := os.Open("passwd")
 	if err != nil {
 		log.Fatal(err)
@@ -79,22 +84,41 @@ func main () {
 	router.SetTrustedProxies([]string{"127.0.0.1"})
 
 	// SECURITY HEADERS
-	/*
-	router.Use(secure.New(secure.Config{
-		AllowedHosts: []string{""},
-		SSLRedirect: false,
+	secureMiddleware := secure.New(secure.Options{
+		//AllowedHosts: []string{""},
+		SSLRedirect: true,
 		SSLHost: "",
 		STSSeconds: 315360000,
 		STSIncludeSubdomains: true,
-		FrameDeny: true,
-		ContentTypeNosniff: true,
-		BrowserXssFilter: true,
-		ContentSecurityPolicy: "default-src 'self'",
-		IENoOpen: true,
-		ReferrerPolicy: "strict-origin-when-cross-origin",
-		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
-	}))
-	*/
+		STSPreload: true,
+		//FrameDeny: true,
+		//ContentTypeNosniff: true,
+		//BrowserXssFilter: true,
+		//ContentSecurityPolicy: "default-src 'self'",
+		//IENoOpen: true,
+		//ReferrerPolicy: "strict-origin-when-cross-origin",
+		//SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
+	})
+
+	// SECURE HANDLER
+	secureFunc := func() gin.HandlerFunc {
+		return func(c *gin.Context) {
+			err := secureMiddleware.Process(c.Writer, c.Request)
+
+			// If there was an error, do not continue
+			if err != nil {
+				c.Abort()
+				return
+			}
+
+			// Avoid header rewrite if response is a redirection
+			if status := c.Writer.Status(); status > 300 && status < 399 {
+				c.Abort()
+			}
+		}
+	}()
+
+	router.Use(secureFunc)
 
 	// HEALTHCHECK
 	health := router.Group("/healthz")
