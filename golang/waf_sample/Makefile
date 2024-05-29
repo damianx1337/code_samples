@@ -9,9 +9,9 @@ HOST_PORT=8090
 
 build:
 	podman build -f ${CT_FILE} -t ${MAINTAINER}/${IMG_NAME}:${VTAG}
-	podman image prune
-	podman builder prune
-	podman system prune
+	podman image prune -f
+	podman builder prune -f
+	podman system prune -f
 
 run:
 	podman run -it --rm -p ${HOST_PORT}:${CT_PORT} --name ${CT_NAME} ${MAINTAINER}/${IMG_NAME}:${VTAG}
