@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.21.11 AS builder
+FROM docker.io/library/golang:1.21.12 AS builder
 
 ENV APP_NAME=gin-gonic-hello-world
 
