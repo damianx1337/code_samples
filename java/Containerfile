@@ -1,0 +1,15 @@
+# syntax=docker/dockerfile:1
+
+MAINTAINER damianx1337
+
+FROM docker.io/library/openjdk:21
+
+ENV APP_NAME=api-gateway
+
+WORKDIR /usr/src/api-gatway
+COPY api-gateway .
+
+RUN ./mvnw clean install
+
+ENTRYPOINT ["./mvnw","spring-boot:run"]
+#CMD ["/bin/bash"]
